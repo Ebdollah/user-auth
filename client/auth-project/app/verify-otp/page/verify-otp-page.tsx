@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { API_BASE_URL } from "@/utils/base-url";
 
-import {API_BASE_URL} from '@/utils/base-url'
-
-export default function VerifyOtpPage() {
+function VerifyOtpComponent() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -14,23 +13,23 @@ export default function VerifyOtpPage() {
 
   let action = null;
   if (searchParams.get("action") === "1") {
-      action = 1;
-    } else if (searchParams.get("action") === "0") {
-        action = 0;
-    }
+    action = 1;
+  } else if (searchParams.get("action") === "0") {
+    action = 0;
+  }
 
   const handleVerifyOtp = async () => {
     setLoading(true);
     setMessage("");
 
-    const token = localStorage.getItem("authToken"); 
+    const token = localStorage.getItem("authToken");
 
     try {
       const res = await fetch(`${API_BASE_URL}/otp-verification`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ otp_code: otp, action: action }),
       });
@@ -39,12 +38,12 @@ export default function VerifyOtpPage() {
       if (!res.ok) throw new Error(data.message || "OTP verification failed");
 
       setMessage("OTP Verified Successfully!");
-      
+
       if (data.data?.Access_Token) {
         localStorage.setItem("authToken", data.data.Access_Token);
       }
 
-      setTimeout(() => router.push("/dashboard"), 1500); 
+      setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: any) {
       setMessage(`Error: ${err.message}`);
     } finally {
@@ -74,5 +73,13 @@ export default function VerifyOtpPage() {
 
       {message && <p className="mt-2 text-center">{message}</p>}
     </div>
+  );
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyOtpComponent />
+    </Suspense>
   );
 }

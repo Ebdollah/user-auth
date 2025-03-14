@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "@/utils/base-url";
 
@@ -9,8 +9,8 @@ export enum SkipType {
   REMIND_ME_LATER = "Remind me after 3 days",
 }
 
-export default function Change2FAStatusPage() {
-  const [loading, setLoading] = useState<{ [key: string]: boolean }>({}); 
+function Change2FAStatusComponent() {
+  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
   const [message, setMessage] = useState("");
   const [showReminder, setShowReminder] = useState(false);
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function Change2FAStatusPage() {
   const handleAction = async (
     actionType: "Enable Now" | SkipType.DO_NOT_ASK_AGAIN | SkipType.REMIND_ME_LATER
   ) => {
-    setLoading((prev) => ({ ...prev, [actionType]: true })); 
+    setLoading((prev) => ({ ...prev, [actionType]: true }));
     setMessage("");
 
     const token = localStorage.getItem("authToken");
@@ -132,5 +132,13 @@ export default function Change2FAStatusPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Change2FAStatusPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Change2FAStatusComponent />
+    </Suspense>
   );
 }
